@@ -5,7 +5,7 @@
 library timezone.src.exceptions;
 
 class TimeZoneInitException implements Exception {
-  final String msg;
+  final String? msg;
 
   TimeZoneInitException(this.msg);
 
@@ -14,7 +14,7 @@ class TimeZoneInitException implements Exception {
 }
 
 class LocationNotFoundException implements Exception {
-  final String msg;
+  final String? msg;
 
   LocationNotFoundException(this.msg);
 

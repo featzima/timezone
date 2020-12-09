@@ -8,20 +8,19 @@
 /// pub run tool/encode lib/data/latest_all.{tzf,dart}
 /// pub run tool/encode lib/data/latest_10y.{tzf,dart}
 /// ```
-
 import 'dart:async';
 import 'dart:io';
+
 import 'package:args/args.dart';
-import 'package:logging/logging.dart';
-import 'package:path/path.dart' as p;
 import 'package:file/file.dart' as pkg_file;
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
-
-import 'package:timezone/tzdata.dart' as tzfile;
-import 'package:timezone/timezone.dart';
+import 'package:logging/logging.dart';
+import 'package:path/path.dart' as p;
 import 'package:timezone/src/tools.dart';
 import 'package:timezone/src/tzdb.dart';
+import 'package:timezone/timezone.dart';
+import 'package:timezone/tzdata.dart' as tzfile;
 
 final outPath = p.join('lib', 'data');
 
@@ -46,7 +45,7 @@ Future<tzfile.Location> loadTzfileLocation(String name, String path) async {
 }
 
 /// Download IANA Time Zone database to [dest] directory.
-Future<String> downloadTzData(String version, String dest) async {
+Future<String> downloadTzData(String? version, String dest) async {
   final outPath = p.join(dest, 'tzdata$version.tar.gz');
   final client = HttpClient();
   try {
@@ -64,15 +63,14 @@ Future<String> downloadTzData(String version, String dest) async {
       await sink.close();
     }
   } finally {
-    await client.close();
+    client.close();
   }
   return outPath;
 }
 
 /// Unpack IANA Time Zone database to [dest] directory.
 Future<bool> unpackTzData(String archivePath, String dest) async {
-  final result =
-      await Process.run('tar', ['--directory=$dest', '-zxf', archivePath]);
+  final result = await Process.run('tar', ['--directory=$dest', '-zxf', archivePath]);
   if (result.exitCode == 0) {
     return true;
   }
@@ -97,8 +95,7 @@ Future<void> main(List<String> arguments) async {
   final log = Logger('main');
 
   // Parse CLI arguments
-  final parser = ArgParser()
-    ..addOption('source', abbr: 's', defaultsTo: 'latest');
+  final parser = ArgParser()..addOption('source', abbr: 's', defaultsTo: 'latest');
   final argResults = parser.parse(arguments);
 
   final source = argResults['source'];
@@ -176,8 +173,7 @@ Future<void> main(List<String> arguments) async {
   final common_10y_Out = File(p.join(outPath, '${source}_10y.tzf'));
   await allOut.writeAsBytes(tzdbSerialize(allDb.db), flush: true);
   await commonOut.writeAsBytes(tzdbSerialize(commonDb.db), flush: true);
-  await common_10y_Out.writeAsBytes(tzdbSerialize(common_10y_Db.db),
-      flush: true);
+  await common_10y_Out.writeAsBytes(tzdbSerialize(common_10y_Db.db), flush: true);
 
   exit(0);
 }

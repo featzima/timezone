@@ -36,27 +36,21 @@ class _Header {
   /// file.
   final int tzh_charcnt;
 
-  _Header(this.tzh_ttisgmtcnt, this.tzh_ttisstdcnt, this.tzh_leapcnt,
-      this.tzh_timecnt, this.tzh_typecnt, this.tzh_charcnt);
+  _Header(
+      this.tzh_ttisgmtcnt, this.tzh_ttisstdcnt, this.tzh_leapcnt, this.tzh_timecnt, this.tzh_typecnt, this.tzh_charcnt);
 
   int dataLength(int longSize) {
     final leapBytes = tzh_leapcnt * (longSize + 4);
     final timeBytes = tzh_timecnt * (longSize + 1);
     final typeBytes = tzh_typecnt * 6;
 
-    return tzh_ttisgmtcnt +
-        tzh_ttisstdcnt +
-        leapBytes +
-        timeBytes +
-        typeBytes +
-        tzh_charcnt;
+    return tzh_ttisgmtcnt + tzh_ttisstdcnt + leapBytes + timeBytes + typeBytes + tzh_charcnt;
   }
 
   factory _Header.fromBytes(List<int> rawData) {
     final data = rawData is Uint8List ? rawData : Uint8List.fromList(rawData);
 
-    final bdata =
-        data.buffer.asByteData(data.offsetInBytes, data.lengthInBytes);
+    final bdata = data.buffer.asByteData(data.offsetInBytes, data.lengthInBytes);
 
     final tzh_ttisgmtcnt = bdata.getInt32(0);
     final tzh_ttisstdcnt = bdata.getInt32(4);
@@ -65,8 +59,7 @@ class _Header {
     final tzh_typecnt = bdata.getInt32(16);
     final tzh_charcnt = bdata.getInt32(20);
 
-    return _Header(tzh_ttisgmtcnt, tzh_ttisstdcnt, tzh_leapcnt, tzh_timecnt,
-        tzh_typecnt, tzh_charcnt);
+    return _Header(tzh_ttisgmtcnt, tzh_ttisstdcnt, tzh_leapcnt, tzh_timecnt, tzh_typecnt, tzh_charcnt);
   }
 }
 
@@ -74,8 +67,7 @@ class _Header {
 String _readByteString(Uint8List data, int offset) {
   for (var i = offset; i < data.length; i++) {
     if (data[i] == 0) {
-      return ascii.decode(
-          data.buffer.asUint8List(data.offsetInBytes + offset, i - offset));
+      return ascii.decode(data.buffer.asUint8List(data.offsetInBytes + offset, i - offset));
     }
   }
   return ascii.decode(data.buffer.asUint8List(data.offsetInBytes + offset));
@@ -83,7 +75,7 @@ String _readByteString(Uint8List data, int offset) {
 
 /// This exception is thrown when Zone Info data is invalid.
 class InvalidZoneInfoDataException implements Exception {
-  final String msg;
+  final String? msg;
 
   InvalidZoneInfoDataException(this.msg);
 
@@ -136,15 +128,14 @@ class Location {
   /// UTC or local time.
   final List<int> isUtc;
 
-  Location(this.name, this.transitionAt, this.transitionZone, this.abbrs,
-      this.zones, this.leapAt, this.leapDiff, this.isStd, this.isUtc);
+  Location(this.name, this.transitionAt, this.transitionZone, this.abbrs, this.zones, this.leapAt, this.leapDiff,
+      this.isStd, this.isUtc);
 
   /// Deserialize [Location] from bytes
   factory Location.fromBytes(String name, List<int> rawData) {
     final data = rawData is Uint8List ? rawData : Uint8List.fromList(rawData);
 
-    final bdata =
-        data.buffer.asByteData(data.offsetInBytes, data.lengthInBytes);
+    final bdata = data.buffer.asByteData(data.offsetInBytes, data.lengthInBytes);
 
     final magic1 = bdata.getUint32(0);
     if (magic1 != _ziMagic) {
@@ -156,14 +147,12 @@ class Location {
 
     switch (version1) {
       case 0:
-        final header = _Header.fromBytes(
-            Uint8List.view(bdata.buffer, offset, _Header.size));
+        final header = _Header.fromBytes(Uint8List.view(bdata.buffer, offset, _Header.size));
 
         // calculating data offsets
         final dataOffset = offset + _Header.size;
         final transitionAtOffset = dataOffset;
-        final transitionZoneOffset =
-            transitionAtOffset + header.tzh_timecnt * 5;
+        final transitionZoneOffset = transitionAtOffset + header.tzh_timecnt * 5;
         final abbrsOffset = transitionZoneOffset + header.tzh_typecnt * 6;
         final leapOffset = abbrsOffset + header.tzh_charcnt;
         final stdOrWctOffset = leapOffset + header.tzh_leapcnt * 8;
@@ -186,8 +175,7 @@ class Location {
         }
 
         // function to read from abbrev buffer
-        final abbrsData = data.buffer
-            .asUint8List(data.offsetInBytes + abbrsOffset, header.tzh_charcnt);
+        final abbrsData = data.buffer.asUint8List(data.offsetInBytes + abbrsOffset, header.tzh_charcnt);
         final abbrs = <String>[];
         final abbrsCache = HashMap<int, int>();
         int readAbbrev(int offset) {
@@ -242,39 +230,33 @@ class Location {
           offset += 1;
         }
 
-        return Location(name, transitionAt, transitionZone, abbrs, zones,
-            leapAt, leapDiff, isStd, isUtc);
+        return Location(name, transitionAt, transitionZone, abbrs, zones, leapAt, leapDiff, isStd, isUtc);
 
       case 50:
       case 51:
         // skip old version header/data
-        final header1 = _Header.fromBytes(
-            Uint8List.view(bdata.buffer, offset, _Header.size));
+        final header1 = _Header.fromBytes(Uint8List.view(bdata.buffer, offset, _Header.size));
         offset += _Header.size + header1.dataLength(4);
 
         final magic2 = bdata.getUint32(offset);
         if (magic2 != _ziMagic) {
-          throw InvalidZoneInfoDataException(
-              'Invalid second magic header "$magic2"');
+          throw InvalidZoneInfoDataException('Invalid second magic header "$magic2"');
         }
 
         final version2 = bdata.getUint8(offset + 4);
         if (version2 != version1) {
-          throw InvalidZoneInfoDataException(
-              'Second version "$version2" doesn\'t match first version '
+          throw InvalidZoneInfoDataException('Second version "$version2" doesn\'t match first version '
               '"$version1"');
         }
 
         offset += 20;
 
-        final header2 = _Header.fromBytes(
-            Uint8List.view(bdata.buffer, offset, _Header.size));
+        final header2 = _Header.fromBytes(Uint8List.view(bdata.buffer, offset, _Header.size));
 
         // calculating data offsets
         final dataOffset = offset + _Header.size;
         final transitionAtOffset = dataOffset;
-        final transitionZoneOffset =
-            transitionAtOffset + header2.tzh_timecnt * 9;
+        final transitionZoneOffset = transitionAtOffset + header2.tzh_timecnt * 9;
         final abbrsOffset = transitionZoneOffset + header2.tzh_typecnt * 6;
         final leapOffset = abbrsOffset + header2.tzh_charcnt;
         final stdOrWctOffset = leapOffset + header2.tzh_leapcnt * 12;
@@ -297,8 +279,7 @@ class Location {
         }
 
         // function to read from abbrev buffer
-        final abbrsData = data.buffer
-            .asUint8List(data.offsetInBytes + abbrsOffset, header2.tzh_charcnt);
+        final abbrsData = data.buffer.asUint8List(data.offsetInBytes + abbrsOffset, header2.tzh_charcnt);
         final abbrs = <String>[];
         final abbrsCache = HashMap<int, int>();
         int readAbbrev(int offset) {
@@ -353,8 +334,7 @@ class Location {
           offset += 1;
         }
 
-        return Location(name, transitionAt, transitionZone, abbrs, zones,
-            leapAt, leapDiff, isStd, isUtc);
+        return Location(name, transitionAt, transitionZone, abbrs, zones, leapAt, leapDiff, isStd, isUtc);
 
       default:
         throw InvalidZoneInfoDataException('Unknown version: $version1');

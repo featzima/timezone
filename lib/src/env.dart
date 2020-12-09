@@ -16,11 +16,11 @@ const String tzDataDefaultFilename = 'latest.tzf';
 
 final Location _UTC = Location('UTC', [minTime], [0], [TimeZone.UTC]);
 
-LocationDatabase _database;
-Location _local;
+LocationDatabase? _database;
+Location? _local;
 
 /// Global TimeZone database
-LocationDatabase get timeZoneDatabase => _database;
+LocationDatabase? get timeZoneDatabase => _database;
 
 /// UTC Location
 Location get UTC => _UTC;
@@ -28,7 +28,7 @@ Location get UTC => _UTC;
 /// Local Location
 ///
 /// By default it is instantiated with UTC [Location]
-Location get local => _local;
+Location? get local => _local;
 
 /// Find [Location] by its name.
 ///
@@ -36,7 +36,7 @@ Location get local => _local;
 /// final detroit = getLocation('America/Detroit');
 /// ```
 Location getLocation(String locationName) {
-  return _database.get(locationName);
+  return _database!.get(locationName);
 }
 
 /// Set local [Location]
@@ -54,7 +54,7 @@ void initializeDatabase(List<int> rawData) {
   _database ??= LocationDatabase();
 
   for (final l in tzdbDeserialize(rawData)) {
-    _database.add(l);
+    _database!.add(l);
   }
 
   _local ??= _UTC;

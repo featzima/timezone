@@ -14,7 +14,7 @@ void main(List<String> arguments) {
   final argResults = parser.parse(arguments);
 
   final String source = argResults['source'];
-  final String location = argResults['location'];
+  final String? location = argResults['location'];
 
   if (source.isEmpty || location == null || location.isEmpty) {
     print(parser.usage);

@@ -32,7 +32,7 @@ class Location {
   final List<TimeZone> zones;
 
   /// [TimeZone] for the current time.
-  TimeZone get currentTimeZone =>
+  TimeZone? get currentTimeZone =>
       timeZone(DateTime.now().millisecondsSinceEpoch);
 
   // Most lookups will be for the current time.
@@ -47,7 +47,7 @@ class Location {
   static final int _cacheNow = DateTime.now().millisecondsSinceEpoch;
   int _cacheStart = 0;
   int _cacheEnd = 0;
-  TimeZone _cacheZone;
+  TimeZone? _cacheZone;
 
   Location(this.name, this.transitionAt, this.transitionZone, this.zones) {
     // Fill in the cache with information about right now,
@@ -71,14 +71,14 @@ class Location {
   /// translate instant in time expressed as milliseconds since
   /// January 1, 1970 00:00:00 UTC to this [Location].
   int translate(int millisecondsSinceEpoch) {
-    return millisecondsSinceEpoch + timeZone(millisecondsSinceEpoch).offset;
+    return millisecondsSinceEpoch + timeZone(millisecondsSinceEpoch)!.offset;
   }
 
   /// translate instant in time expressed as milliseconds since
   /// January 1, 1970 00:00:00 to UTC.
   int translateToUtc(int millisecondsSinceEpoch) {
     final t = lookupTimeZone(millisecondsSinceEpoch);
-    final tz = t.timeZone;
+    final tz = t.timeZone!;
     final start = t.start;
     final end = t.end;
 
@@ -89,9 +89,9 @@ class Location {
 
       if (utc < start) {
         utc =
-            millisecondsSinceEpoch - lookupTimeZone(start - 1).timeZone.offset;
+            millisecondsSinceEpoch - lookupTimeZone(start - 1).timeZone!.offset;
       } else if (utc >= end) {
-        utc = millisecondsSinceEpoch - lookupTimeZone(end).timeZone.offset;
+        utc = millisecondsSinceEpoch - lookupTimeZone(end).timeZone!.offset;
       }
     }
 
@@ -140,7 +140,7 @@ class Location {
 
   /// timeZone method returns [TimeZone] in use at an instant in time expressed
   /// as milliseconds since January 1, 1970 00:00:00 UTC.
-  TimeZone timeZone(int millisecondsSinceEpoch) {
+  TimeZone? timeZone(int millisecondsSinceEpoch) {
     return lookupTimeZone(millisecondsSinceEpoch).timeZone;
   }
 
@@ -148,7 +148,7 @@ class Location {
   /// expressed as milliseconds since January 1, 1970 00:00:00.
   TimeZone timeZoneFromLocal(int millisecondsSinceEpoch) {
     final t = lookupTimeZone(millisecondsSinceEpoch);
-    var tz = t.timeZone;
+    var tz = t.timeZone!;
     final start = t.start;
     final end = t.end;
 
@@ -156,9 +156,9 @@ class Location {
       final utc = millisecondsSinceEpoch - tz.offset;
 
       if (utc < start) {
-        tz = lookupTimeZone(start - 1).timeZone;
+        tz = lookupTimeZone(start - 1).timeZone!;
       } else if (utc >= end) {
-        tz = lookupTimeZone(end).timeZone;
+        tz = lookupTimeZone(end).timeZone!;
       }
     }
 
@@ -263,7 +263,7 @@ class TimeZone {
 
 /// A [TzInstant] represents a timezone and an instant in time.
 class TzInstant {
-  final TimeZone timeZone;
+  final TimeZone? timeZone;
   final int start;
   final int end;
 
